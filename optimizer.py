@@ -39,7 +39,7 @@ def descend(objective, initial_point, learning_rate, maximum_iterations, converg
 
         if gradient_norm < convergence_threshold:
             if not silent:
-                print("\n✅ Criterio de paro alcanzado (||∇f(x)|| < ε)")
+                print("\n Criterio de paro alcanzado (||∇f(x)|| < ε)")
             break
 
         next_point = current_point - learning_rate * gradient
@@ -47,7 +47,7 @@ def descend(objective, initial_point, learning_rate, maximum_iterations, converg
         position_change = np.linalg.norm(next_point - current_point)
         if position_change < convergence_threshold:
             if not silent:
-                print("\n✅ Posición estable (el punto ya no se mueve)")
+                print("\n Posición estable (el punto ya no se mueve)")
             break
 
         if bounds is not None:
@@ -56,7 +56,7 @@ def descend(objective, initial_point, learning_rate, maximum_iterations, converg
         constrained_change = np.linalg.norm(next_point - current_point)
         if constrained_change < convergence_threshold:
             if not silent:
-                print("\n⚠️ Punto atrapado en el borde del dominio")
+                print("\n Punto atrapado en el borde del dominio")
             break
 
         current_point = next_point

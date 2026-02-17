@@ -123,7 +123,7 @@ def plot_two_dimensions(history, objective):
 
 
 def plot_high_dimension(history):
-    print("\n⚠️ Visualización completa no disponible para más de 2 dimensiones.")
+    print("\n Visualización completa no disponible para más de 2 dimensiones.")
     print("Mostrando solo gráfica de convergencia...\n")
 
     gradient_norms = [record.gradient_norm for record in history]

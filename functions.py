@@ -38,7 +38,7 @@ def select():
     print("\nFunciones disponibles:")
     for number, (name, dimension, _, _bounds, _defaults) in enumerate(AVAILABLE, start=1):
         hint = f" (dimensión: {dimension})" if dimension else ""
-        print(f"  {number}. {name}{hint}")
+        print(f" {number}. {name}{hint}")
 
     while True:
         try:
@@ -46,4 +46,4 @@ def select():
             name, dimension, function, bounds, defaults = AVAILABLE[selection]
             return name, dimension, function, bounds, defaults
         except ValueError as error:
-            print(f"  ❌ {error}")
+            print(f" {error}")

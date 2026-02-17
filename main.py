@@ -17,7 +17,7 @@ def request_float(prompt, default_value, parameter_name):
             text = input(prompt).strip()
             return default_value if not text else input_parser.parse_float(text, parameter_name)
         except ValueError as error:
-            print(f"  ❌ {error}")
+            print(f" {error}")
 
 
 def request_integer(prompt, default_value, parameter_name):
@@ -30,7 +30,7 @@ def request_integer(prompt, default_value, parameter_name):
                 raise ValueError(f"{parameter_name} es obligatorio.")
             return input_parser.parse_positive_integer(text, parameter_name)
         except ValueError as error:
-            print(f"  ❌ {error}")
+            print(f" {error}")
 
 
 def configure(defaults):
@@ -51,9 +51,9 @@ def locate(dimension, bounds):
             initial_point = input_parser.parse_vector(input("  "), dimension)
             if is_within_bounds(initial_point, bounds):
                 return initial_point
-            print(f"  ❌ Punto fuera del dominio [{bounds[0]}, {bounds[1]}]. Intenta de nuevo.")
+            print(f" Punto fuera del dominio [{bounds[0]}, {bounds[1]}]. Intenta de nuevo.")
         except ValueError as error:
-            print(f"  ❌ {error}")
+            print(f" {error}")
 
 
 def collect_restarts():
@@ -64,7 +64,7 @@ def collect_restarts():
                 return 0
             return input_parser.parse_positive_integer(restart_text, "reinicios")
         except ValueError as error:
-            print(f"  ❌ {error}")
+            print(f" {error}")
 
 
 def restart(objective, bounds, dimension, learning_rate, maximum_iterations, convergence_threshold, restart_count):
@@ -122,9 +122,9 @@ def save(filepath, final_point, final_value, history):
             file.write(f"f(x*) = {final_value}\n\n")
             for record in history:
                 file.write(format_record(record) + "\n")
-        print(f"✅ Resultados guardados en '{filepath}'")
+        print(f" Resultados guardados en '{filepath}'")
     except IOError:
-        print(f"❌ No se pudo guardar en '{filepath}'")
+        print(f" No se pudo guardar en '{filepath}'")
 
 
 def main():
@@ -167,10 +167,10 @@ def main():
         )
 
         if best_value < final_value:
-            print(f"\n✅ Reinicio encontró mejor resultado: f(x) = {best_value:.6f} < {final_value:.6f}")
+            print(f"\n Reinicio encontró mejor resultado: f(x) = {best_value:.6f} < {final_value:.6f}")
             final_point, final_value, history = best_point, best_value, best_history
         else:
-            print(f"\n📌 La ejecución inicial fue la mejor: f(x) = {final_value:.6f}")
+            print(f"\n La ejecución inicial fue la mejor: f(x) = {final_value:.6f}")
 
     display_results(final_point, final_value, history)
 
@@ -183,7 +183,6 @@ def main():
     response = input("\n¿Ver visualización gráfica? (s/n): ").strip().lower()
     if response == 's':
         visualization.visualize(history, objective)
-
 
 if __name__ == "__main__":
     main()
