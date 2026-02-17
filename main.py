@@ -3,7 +3,6 @@ import optimizer
 import visualization
 import input_parser
 
-
 def is_within_bounds(initial_point, bounds):
     for value in initial_point:
         if value < bounds[0] or value > bounds[1]:
@@ -100,6 +99,19 @@ def format_record(record):
     )
 
 
+def announce(final_value, global_minimum):
+    tolerance = 0.05
+    reached = abs(final_value - global_minimum) <= tolerance
+    if reached:
+        print("\n[MINIMO GLOBAL] El algoritmo alcanzo el minimo global conocido.")
+        print(f"  f* = {global_minimum}, resultado: f(x) = {final_value:.6f}")
+    else:
+        print("\n[MINIMO LOCAL] El algoritmo convergio a un minimo local.")
+        print(f"  Minimo global conocido: f* = {global_minimum}")
+        print(f"  Resultado obtenido:     f(x) = {final_value:.6f}")
+        print(f"  Diferencia:             {abs(final_value - global_minimum):.6f}")
+
+
 def display_results(final_point, final_value, history):
     print("\n" + "=" * 60)
     print("   RESULTADO FINAL")
@@ -128,7 +140,7 @@ def save(filepath, final_point, final_value, history):
 
 
 def main():
-    name, suggested_dimension, objective, bounds, defaults = functions.select()
+    name, suggested_dimension, objective, bounds, defaults, global_minimum = functions.select()
 
     print("\n" + "=" * 60)
     print(f"  GRADIENTE DESCENDENTE PARA: {name}")
@@ -173,6 +185,7 @@ def main():
             print(f"\n La ejecución inicial fue la mejor: f(x) = {final_value:.6f}")
 
     display_results(final_point, final_value, history)
+    announce(final_value, global_minimum)
 
     save_text = input("\n¿Guardar resultados en archivo? (s/n): ").strip().lower()
     if save_text == 's':
