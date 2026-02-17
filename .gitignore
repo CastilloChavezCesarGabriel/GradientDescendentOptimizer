@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Logs & Temp
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.iml
+
+# OS Specific
+.DS_Store
+Thumbs.db
