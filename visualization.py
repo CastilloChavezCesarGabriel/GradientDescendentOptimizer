@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Gráfica reutilizable que muestra cómo f(x) disminuye a lo largo de las iteraciones;
+# extrae iteraciones y valores del historial y dibuja una línea azul con marcadores
 def plot_convergence(axis, history, value_label="f(x)"):
     iterations = [record.iteration for record in history]
     values = [record.value for record in history]
@@ -12,11 +14,15 @@ def plot_convergence(axis, history, value_label="f(x)"):
     axis.grid(True, alpha=0.3)
 
 
+# Marca el punto de inicio (círculo verde) y el punto final (estrella roja) en la gráfica;
+# se reutiliza en las vistas 1D y 2D para identificar dónde arrancó y terminó el descenso
 def mark_endpoints(axis, horizontal, vertical):
     axis.plot(horizontal[0], vertical[0], 'go', markersize=12, label='Inicio')
     axis.plot(horizontal[-1], vertical[-1], 'r*', markersize=15, label='Final')
 
 
+# Evalúa la función objetivo en cada celda de una malla 2D (meshgrid);
+# recorre fila por fila y columna por columna para llenar la matriz de valores de superficie
 def evaluate_grid(objective, horizontal_grid, vertical_grid):
     surface_values = np.zeros_like(horizontal_grid)
     for row in range(horizontal_grid.shape[0]):
@@ -26,6 +32,8 @@ def evaluate_grid(objective, horizontal_grid, vertical_grid):
     return surface_values
 
 
+# Vista para funciones 1D: a la izquierda dibuja la curva f(x) con la trayectoria del descenso
+# superpuesta en rojo, y a la derecha muestra la gráfica de convergencia
 def plot_one_dimension(history, objective):
     horizontal_trajectory = [record.point[0] for record in history]
     vertical_trajectory = [record.value for record in history]
@@ -57,6 +65,8 @@ def plot_one_dimension(history, objective):
     plt.show()
 
 
+# Vista para funciones 2D con tres paneles: superficie 3D con la trayectoria en rojo,
+# mapa de curvas de nivel con la trayectoria superpuesta, y gráfica de convergencia
 def plot_two_dimensions(history, objective):
     horizontal_trajectory = [record.point[0] for record in history]
     vertical_trajectory = [record.point[1] for record in history]
@@ -122,6 +132,8 @@ def plot_two_dimensions(history, objective):
     plt.show()
 
 
+# Para dimensiones mayores a 2 no se puede graficar la superficie, así que muestra dos paneles:
+# convergencia de f(x) a la izquierda y decaimiento de la norma del gradiente a la derecha
 def plot_high_dimension(history):
     print("\n Visualización completa no disponible para más de 2 dimensiones.")
     print("Mostrando solo gráfica de convergencia...\n")
@@ -143,6 +155,8 @@ def plot_high_dimension(history):
     plt.show()
 
 
+# Punto de entrada de visualización: detecta la dimensión del problema a partir del historial
+# y delega a plot_one_dimension, plot_two_dimensions o plot_high_dimension según corresponda
 def visualize(history, objective):
     dimension = len(history[0].point)
 

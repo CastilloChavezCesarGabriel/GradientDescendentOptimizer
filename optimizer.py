@@ -6,6 +6,8 @@ IterationRecord = namedtuple(
     ['iteration', 'point', 'value', 'gradient_norm']
 )
 
+# Aproxima el gradiente numéricamente porque las funciones objetivo no tienen derivada analítica;
+# para cada dimensión, evalúa la función en point+h y point-h y calcula la diferencia central
 def differentiate(objective, point, step_size=1e-8):
     gradient = np.zeros_like(point)
     for index in range(len(point)):
@@ -16,13 +18,21 @@ def differentiate(objective, point, step_size=1e-8):
         gradient[index] = (objective(forward_point) - objective(backward_point)) / (2 * step_size)
     return gradient
 
+# Recorta el punto al dominio válido cuando el paso del gradiente lo saca fuera de los límites;
+# usa np.clip para forzar cada coordenada entre bounds[0] y bounds[1]
 def constrain(point, bounds):
     return np.clip(point, bounds[0], bounds[1])
 
 
+# Genera un punto aleatorio uniforme dentro del dominio para los reinicios aleatorios;
+# cada coordenada se muestrea independientemente entre bounds[0] y bounds[1]
 def sample_point(bounds, dimension):
     return np.random.uniform(bounds[0], bounds[1], dimension).tolist()
 
+# Bucle principal del gradiente descendente: en cada iteración calcula el gradiente numérico,
+# registra el estado en history, y avanza el punto con x_new = x - α·∇f(x);
+# se detiene si: (1) la norma del gradiente es menor que ε, (2) el punto ya no se mueve,
+# o (3) el punto queda atrapado en el borde del dominio tras el recorte
 def descend(objective, initial_point, learning_rate, maximum_iterations, convergence_threshold, bounds=None, silent=False):
     current_point = np.array(initial_point, dtype=float)
     history = []
