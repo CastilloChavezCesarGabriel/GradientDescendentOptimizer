@@ -142,7 +142,6 @@ def display_results(final_point, final_value, history):
     for record in history:
         print(format_record(record))
 
-
 # Escribe el punto óptimo y el historial de iteraciones en un archivo de texto;
 # si ocurre un error de escritura, informa al usuario sin interrumpir el programa
 def save(filepath, final_point, final_value, history):

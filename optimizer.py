@@ -19,10 +19,9 @@ def differentiate(objective, point, step_size=1e-8):
     return gradient
 
 # Recorta el punto al dominio válido cuando el paso del gradiente lo saca fuera de los límites;
-# usa np.clip para forzar cada coordenada entre bounds[0] y bounds[1]
+# usa np. Clip para forzar cada coordenada entre bounds[0] y bounds[1]
 def constrain(point, bounds):
     return np.clip(point, bounds[0], bounds[1])
-
 
 # Genera un punto aleatorio uniforme dentro del dominio para los reinicios aleatorios;
 # cada coordenada se muestrea independientemente entre bounds[0] y bounds[1]
