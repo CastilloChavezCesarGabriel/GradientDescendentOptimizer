@@ -101,7 +101,7 @@ def restart(objective, bounds, dimension, learning_rate, maximum_iterations, con
     return best_point, best_value, best_history
 
 
-# Convierte un IterationRecord en una línea legible con el número de iteración,
+# Convierte un IterationRecord en una línea legible con el número de iteraciones,
 # el punto actual, el valor de la función y la norma del gradiente
 def format_record(record):
     return (
@@ -120,7 +120,7 @@ def announce(final_value, global_minimum):
         print("\n[MINIMO GLOBAL] El algoritmo alcanzo el minimo global conocido.")
         print(f" f* = {global_minimum}, resultado: f(x) = {final_value:.6f}")
     else:
-        print("\n[MINIMO LOCAL] El algoritmo convergio a un minimo local.")
+        print("\n[MINIMO LOCAL] El algoritmo convergió a un minimo local.")
         print(f" Minimo global conocido: f* = {global_minimum}")
         print(f" Resultado obtenido:     f(x) = {final_value:.6f}")
         print(f" Diferencia:             {abs(final_value - global_minimum):.6f}")
