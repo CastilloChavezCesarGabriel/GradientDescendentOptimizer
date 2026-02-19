@@ -2,7 +2,7 @@ import numpy as np
 import input_parser
 
 # Función 1D con múltiples mínimos locales por la oscilación del coseno;
-# el optimizador puede quedar atrapado dependiendo del punto inicial
+# el optimizador puede quedar atrapado dependiendo del punto inicia
 def cosine(point):
     return np.cos(5 * point[0]) + 2
 
