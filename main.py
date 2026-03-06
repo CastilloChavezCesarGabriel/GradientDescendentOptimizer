@@ -3,16 +3,12 @@ import optimizer
 import visualization
 import input_parser
 
-# Verifica que cada coordenada del punto inicial esté dentro de los límites del dominio;
-# si alguna componente cae fuera del rango [bounds[0], bounds[1]], retorna False
 def is_within_bounds(initial_point, bounds):
     for value in initial_point:
         if value < bounds[0] or value > bounds[1]:
             return False
     return True
 
-# Muestra el prompt y repite hasta obtener un float válido;
-# si el usuario deja vacío el campo, devuelve el valor por defecto
 def request_float(prompt, default_value, parameter_name):
     while True:
         try:
@@ -21,8 +17,6 @@ def request_float(prompt, default_value, parameter_name):
         except ValueError as error:
             print(f" {error}")
 
-# Muestra el prompt y repite hasta obtener un entero positivo válido;
-# si el campo queda vacío y hay default, lo usa; si no hay default, lanza error obligatorio
 def request_integer(prompt, default_value, parameter_name):
     while True:
         try:
@@ -35,8 +29,6 @@ def request_integer(prompt, default_value, parameter_name):
         except ValueError as error:
             print(f" {error}")
 
-# Pide al usuario los tres hiperparámetros: tasa de aprendizaje α, máximo de iteraciones N
-# y criterio de paro ε; cada uno tiene un valor por defecto que viene de la función elegida
 def configure(defaults):
     default_rate, default_iterations, default_tolerance = defaults
     print("\nConfiguración de la optimización:")
@@ -47,9 +39,6 @@ def configure(defaults):
 
     return learning_rate, maximum_iterations, convergence_threshold
 
-
-# Solicita las coordenadas del punto inicial separadas por espacios,
-# las parsea con parse_vector y verifica que estén dentro del dominio antes de devolverlas
 def locate(dimension, bounds):
     while True:
         try:
@@ -61,8 +50,6 @@ def locate(dimension, bounds):
         except ValueError as error:
             print(f" {error}")
 
-# Pregunta cuántos reinicios aleatorios ejecutar; estos reinicios ayudan a escapar
-# de mínimos locales lanzando el descenso desde puntos aleatorios adicionales
 def collect_restarts():
     while True:
         try:
@@ -73,18 +60,14 @@ def collect_restarts():
         except ValueError as error:
             print(f" {error}")
 
-
-# Ejecuta varios descensos desde puntos aleatorios generados con sample_point;
-# en cada intento compara el valor obtenido con el mejor hasta ahora y se queda con el menor
 def restart(objective, bounds, dimension, learning_rate, maximum_iterations, convergence_threshold, restart_count):
     best_point = None
     best_value = float('inf')
     best_history = []
 
     for attempt in range(restart_count):
-        random_start = optimizer.sample_point(bounds, dimension)
         candidate_point, candidate_value, candidate_history = optimizer.descend(
-            objective, random_start, learning_rate,
+            objective, optimizer.sample_point(bounds, dimension), learning_rate,
             maximum_iterations, convergence_threshold,
             bounds=bounds, silent=True
         )
@@ -100,9 +83,6 @@ def restart(objective, bounds, dimension, learning_rate, maximum_iterations, con
 
     return best_point, best_value, best_history
 
-
-# Convierte un IterationRecord en una línea legible con el número de iteraciones,
-# el punto actual, el valor de la función y la norma del gradiente
 def format_record(record):
     return (
         f"{record.iteration}: x = {record.point}, "
@@ -110,9 +90,6 @@ def format_record(record):
         f"||g|| = {record.gradient_norm:.6f}"
     )
 
-
-# Compara el resultado final contra el mínimo global conocido usando una tolerancia de 0.05;
-# si la diferencia es menor, anuncia que se alcanzó el mínimo global; si no, indica que es local
 def announce(final_value, global_minimum):
     tolerance = 0.05
     reached = abs(final_value - global_minimum) <= tolerance
@@ -125,9 +102,6 @@ def announce(final_value, global_minimum):
         print(f" Resultado obtenido:     f(x) = {final_value:.6f}")
         print(f" Diferencia:             {abs(final_value - global_minimum):.6f}")
 
-
-# Imprime en consola el punto óptimo x* y su valor f(x*), seguido del historial completo
-# de iteraciones formateado con format_record
 def display_results(final_point, final_value, history):
     print("\n" + "=" * 60)
     print(" RESULTADO FINAL")
@@ -142,8 +116,6 @@ def display_results(final_point, final_value, history):
     for record in history:
         print(format_record(record))
 
-# Escribe el punto óptimo y el historial de iteraciones en un archivo de texto;
-# si ocurre un error de escritura, informa al usuario sin interrumpir el programa
 def save(filepath, final_point, final_value, history):
     try:
         with open(filepath, 'w') as file:
@@ -155,34 +127,70 @@ def save(filepath, final_point, final_value, history):
     except IOError:
         print(f" No se pudo guardar en '{filepath}'")
 
-
-# Orquesta todo el flujo: selecciona la función objetivo, configura los hiperparámetros,
-# ejecuta el descenso de gradiente, opcionalmente lanza reinicios aleatorios,
-# muestra resultados, anuncia si es mínimo global o local, y ofrece guardar y graficar
-def main():
-    name, suggested_dimension, objective, bounds, defaults, global_minimum = functions.select()
-
+def print_header(name):
     print("\n" + "=" * 60)
     print(f" GRADIENTE DESCENDENTE PARA: {name}")
     print("=" * 60)
 
+def resolve_dimension(suggested_dimension):
     if suggested_dimension is not None:
-        dimension = suggested_dimension
-    else:
-        dimension = request_integer("\nIngresa la dimensión d: ", None, "dimensión")
+        return suggested_dimension
+    return request_integer("\nIngresa la dimensión d: ", None, "dimensión")
 
-    learning_rate, maximum_iterations, convergence_threshold = configure(defaults)
-    initial_point = locate(dimension, bounds)
-
+def request_details():
     print()
     details_text = input("¿Mostrar detalle de iteraciones? (s/n, default: n): ").strip().lower()
-    show_details = details_text == 's'
-    restart_count = collect_restarts()
+    return details_text == 's'
 
+def print_banner():
     print(f"\n" + "=" * 60)
     print(" EJECUTANDO OPTIMIZACIÓN...")
     print("=" * 60 + "\n")
 
+def improve(objective, bounds, dimension, learning_rate, maximum_iterations, convergence_threshold, restart_count, initial_value):
+    print(f"\n--- EJECUTANDO {restart_count} REINICIOS ALEATORIOS ---\n")
+    print(f"  Ejecución inicial: f(x) = {initial_value:.6f}")
+
+    best_point, best_value, best_history = restart(
+        objective, bounds, dimension, learning_rate,
+        maximum_iterations, convergence_threshold, restart_count
+    )
+
+    if best_value < initial_value:
+        print(f"\n Reinicio encontró mejor resultado: f(x) = {best_value:.6f} < {initial_value:.6f}")
+        return best_point, best_value, best_history
+
+    print(f"\n La ejecución inicial fue la mejor: f(x) = {initial_value:.6f}")
+    return None, None, None
+
+def offer_save(final_point, final_value, history):
+    save_text = input("\n¿Guardar resultados en archivo? (s/n): ").strip().lower()
+    if save_text != 's':
+        return
+    filepath = input("Nombre del archivo (default: resultados.txt): ").strip()
+    save(filepath if filepath else "resultados.txt", final_point, final_value, history)
+
+def offer_visualization(history, objective):
+    response = input("\n¿Ver visualización gráfica? (s/n): ").strip().lower()
+    if response == 's':
+        visualization.visualize(history, objective)
+
+def present(final_point, final_value, history, global_minimum, objective):
+    display_results(final_point, final_value, history)
+    announce(final_value, global_minimum)
+    offer_save(final_point, final_value, history)
+    offer_visualization(history, objective)
+
+def main():
+    name, suggested_dimension, objective, bounds, defaults, global_minimum = functions.select()
+    print_header(name)
+    dimension = resolve_dimension(suggested_dimension)
+    learning_rate, maximum_iterations, convergence_threshold = configure(defaults)
+    initial_point = locate(dimension, bounds)
+    show_details = request_details()
+    restart_count = collect_restarts()
+
+    print_banner()
     final_point, final_value, history = optimizer.descend(
         objective, initial_point, learning_rate,
         maximum_iterations, convergence_threshold,
@@ -190,32 +198,15 @@ def main():
     )
 
     if restart_count > 0:
-        print(f"\n--- EJECUTANDO {restart_count} REINICIOS ALEATORIOS ---\n")
-        print(f"  Ejecución inicial: f(x) = {final_value:.6f}")
-
-        best_point, best_value, best_history = restart(
+        result = improve(
             objective, bounds, dimension, learning_rate,
-            maximum_iterations, convergence_threshold, restart_count
+            maximum_iterations, convergence_threshold,
+            restart_count, final_value
         )
+        if result[0] is not None:
+            final_point, final_value, history = result
 
-        if best_value < final_value:
-            print(f"\n Reinicio encontró mejor resultado: f(x) = {best_value:.6f} < {final_value:.6f}")
-            final_point, final_value, history = best_point, best_value, best_history
-        else:
-            print(f"\n La ejecución inicial fue la mejor: f(x) = {final_value:.6f}")
-
-    display_results(final_point, final_value, history)
-    announce(final_value, global_minimum)
-
-    save_text = input("\n¿Guardar resultados en archivo? (s/n): ").strip().lower()
-    if save_text == 's':
-        filepath = input("Nombre del archivo (default: resultados.txt): ").strip()
-        filepath = filepath if filepath else "resultados.txt"
-        save(filepath, final_point, final_value, history)
-
-    response = input("\n¿Ver visualización gráfica? (s/n): ").strip().lower()
-    if response == 's':
-        visualization.visualize(history, objective)
+    present(final_point, final_value, history, global_minimum, objective)
 
 if __name__ == "__main__":
     main()

@@ -6,32 +6,39 @@ IterationRecord = namedtuple(
     ['iteration', 'point', 'value', 'gradient_norm']
 )
 
-# Aproxima el gradiente numéricamente porque las funciones objetivo no tienen derivada analítica;
-# para cada dimensión, evalúa la función en point+h y point-h y calcula la diferencia central
 def differentiate(objective, point, step_size=1e-8):
     gradient = np.zeros_like(point)
     for index in range(len(point)):
+        h = step_size * max(1.0, abs(point[index]))
         forward_point = np.copy(point)
         backward_point = np.copy(point)
-        forward_point[index] += step_size
-        backward_point[index] -= step_size
-        gradient[index] = (objective(forward_point) - objective(backward_point)) / (2 * step_size)
+        forward_point[index] += h
+        backward_point[index] -= h
+        gradient[index] = (objective(forward_point) - objective(backward_point)) / (2 * h)
     return gradient
 
-# Recorta el punto al dominio válido cuando el paso del gradiente lo saca fuera de los límites;
-# usa np. Clip para forzar cada coordenada entre bounds[0] y bounds[1]
 def constrain(point, bounds):
+    if bounds is None:
+        return point
     return np.clip(point, bounds[0], bounds[1])
 
-# Genera un punto aleatorio uniforme dentro del dominio para los reinicios aleatorios;
-# cada coordenada se muestrea independientemente entre bounds[0] y bounds[1]
 def sample_point(bounds, dimension):
     return np.random.uniform(bounds[0], bounds[1], dimension).tolist()
 
-# Bucle principal del gradiente descendente: en cada iteración calcula el gradiente numérico,
-# registra el estado en history, y avanza el punto con x_new = x - α·∇f(x);
-# se detiene si: (1) la norma del gradiente es menor que ε, (2) el punto ya no se mueve,
-# o (3) el punto queda atrapado en el borde del dominio tras el recorte
+def report(message, silent):
+    if not silent:
+        print(message)
+
+def backtrack(objective, current_point, gradient, learning_rate, current_value, bounds, threshold):
+    effective_rate = learning_rate
+    while True:
+        next_point = constrain(current_point - effective_rate * gradient, bounds)
+        if objective(next_point) < current_value:
+            return next_point
+        effective_rate *= 0.5
+        if effective_rate < threshold:
+            return next_point
+
 def descend(objective, initial_point, learning_rate, maximum_iterations, convergence_threshold, bounds=None, silent=False):
     current_point = np.array(initial_point, dtype=float)
     history = []
@@ -40,35 +47,19 @@ def descend(objective, initial_point, learning_rate, maximum_iterations, converg
         gradient = differentiate(objective, current_point)
         gradient_norm = np.linalg.norm(gradient)
         current_value = objective(current_point)
-
         history.append(IterationRecord(iteration, current_point.copy(), current_value, gradient_norm))
-
-        if not silent:
-            print(f"Iteración {iteration}: f(x) = {current_value:.6f}, ||g|| = {gradient_norm:.6f}")
+        report(f"Iteración {iteration}: f(x) = {current_value:.6f}, ||g|| = {gradient_norm:.6f}", silent)
 
         if gradient_norm < convergence_threshold:
-            if not silent:
-                print("\n Criterio de paro alcanzado (||∇f(x)|| < ε)")
+            report("\n Criterio de paro alcanzado (||∇f(x)|| < ε)", silent)
             break
 
-        next_point = current_point - learning_rate * gradient
-
+        next_point = backtrack(objective, current_point, gradient, learning_rate, current_value, bounds, convergence_threshold)
         position_change = np.linalg.norm(next_point - current_point)
         if position_change < convergence_threshold:
-            if not silent:
-                print("\n Posición estable (el punto ya no se mueve)")
-            break
-
-        if bounds is not None:
-            next_point = constrain(next_point, bounds)
-
-        constrained_change = np.linalg.norm(next_point - current_point)
-        if constrained_change < convergence_threshold:
-            if not silent:
-                print("\n Punto atrapado en el borde del dominio")
+            report("\n Posición estable (el punto ya no se mueve)", silent)
             break
 
         current_point = next_point
 
-    final_value = objective(current_point)
-    return current_point, final_value, history
+    return current_point, objective(current_point), history

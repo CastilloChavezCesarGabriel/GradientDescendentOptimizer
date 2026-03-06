@@ -1,25 +1,16 @@
 import numpy as np
 import input_parser
 
-# Función 1D con múltiples mínimos locales por la oscilación del coseno;
-# el optimizador puede quedar atrapado dependiendo del punto inicia
 def cosine(point):
     return np.cos(5 * point[0]) + 2
 
-# Función 1D cuyo único mínimo está en el borde derecho del dominio;
-# sirve para verificar que el algoritmo sigue la pendiente constante hasta el límite
 def linear(point):
     return -2 * point[0] + 5
 
-# Función 2D donde los términos mixtos (0.5x + 0.5y) crean un valle curvo hacia el origen;
-# las potencias ² y ⁴ del término mixto hacen que la superficie sea más empinada lejos del centro
 def zakharov(point):
     mixed_term = 0.5 * point[0] + 0.5 * point[1]
     return point[0]**2 + point[1]**2 + mixed_term**2 + mixed_term**4
 
-# Benchmark N-dimensional con muchos mínimos locales para exigir al optimizador;
-# primero transforma las coordenadas con w = 1 + (x-1)/4, luego suma un término seno inicial,
-# una sumatoria de penalizaciones entre componentes consecutivas y un término final con seno doble
 def levy(point):
     dimension = len(point)
     transformed = 1 + (point - 1) / 4
@@ -43,9 +34,6 @@ AVAILABLE = [
     ("Levy (multivariable), x ∈ [-10, 10]", None, levy, (-10.0, 10.0), (0.5, 500, 1e-8), 0.0),
 ]
 
-# Muestra un menú numerado con las funciones disponibles y espera la elección del usuario;
-# válida la entrada con parse_selection y devuelve el nombre, dimensión, función, límites,
-# valores por defecto y mínimo global de la función elegida
 def select():
     print("\nFunciones disponibles:")
     for number, (name, dimension, _, _bounds, _defaults, _minimum) in enumerate(AVAILABLE, start=1):
